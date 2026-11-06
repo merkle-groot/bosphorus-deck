@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <title>Bosphorus</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@600&display=swap" rel="stylesheet">
 <style>
 :root {
   --sky: #0B1424;
@@ -21,6 +24,7 @@
   --serif: "Iowan Old Style", "Charter", Georgia, serif;
   --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
   --mono: "SF Mono", ui-monospace, Menlo, monospace;
+  --brand: "Geist", -apple-system, sans-serif;
   --ease: cubic-bezier(.65,0,.35,1);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -124,7 +128,7 @@ h2 em, h1 em { font-style: italic; color: var(--teal); }
 }
 #gauge .read small { display: block; font-size: 11px; letter-spacing: .16em; color: var(--dim); margin-top: 3px; }
 #count { position: absolute; left: 160px; bottom: 50px; z-index: 5; font-family: var(--mono); font-size: 16px; letter-spacing: .14em; color: rgba(244,242,235,.4); }
-#brandmark { position: absolute; right: 64px; bottom: 44px; z-index: 5; opacity: .55; display: flex; gap: 12px; align-items: center; font-family: var(--serif); font-size: 22px; }
+#brandmark { position: absolute; right: 64px; bottom: 44px; z-index: 5; opacity: .55; display: flex; gap: 12px; align-items: center; font-family: var(--brand); font-weight: 600; letter-spacing: -.03em; font-size: 22px; }
 #brandmark svg { width: 26px; height: 26px; }
 
 /* ---------- 1 title ---------- */
@@ -135,7 +139,7 @@ h2 em, h1 em { font-style: italic; color: var(--teal); }
 #s-title.on .mark .bankR { animation: shoreR 1.6s cubic-bezier(.2,.8,.2,1) .4s both; }
 @keyframes shoreL { from { transform: translateX(-40px); opacity: 0; } }
 @keyframes shoreR { from { transform: translateX(40px); opacity: 0; } }
-#s-title h1 { font-size: 220px; line-height: .9; letter-spacing: -.035em; }
+#s-title h1 { font-family: var(--brand); font-weight: 600; font-size: 220px; line-height: .9; letter-spacing: -.045em; }
 #s-title .sub { font-size: 40px; color: var(--dim); margin-top: 34px; font-family: var(--serif); font-style: italic; }
 #s-title .tag { margin-top: 70px; font-size: 30px; display: flex; gap: 46px; }
 #s-title .tag span { display: flex; gap: 14px; align-items: baseline; }
