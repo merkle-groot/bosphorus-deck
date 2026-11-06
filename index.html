@@ -1,0 +1,1145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bosphorus</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {
+  --sky: #0B1424;
+  --water: #083E80;
+  --deep: #041F45;
+  --abyss: #020A18;
+  --chalk: #F4F2EB;
+  --teal: #67DCCB;
+  --green: #5EE08A;
+  --amber: #FFB340;
+  --red: #FF7A6E;
+  --blue: #2F7FE0;
+  --dim: rgba(244,242,235,.62);
+  --faint: rgba(244,242,235,.14);
+  --serif: "Iowan Old Style", "Charter", Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  --mono: "SF Mono", ui-monospace, Menlo, monospace;
+  --ease: cubic-bezier(.65,0,.35,1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #000; overflow: hidden; }
+body { font-family: var(--sans); color: var(--chalk); -webkit-font-smoothing: antialiased; }
+
+#stage {
+  position: absolute; left: 50%; top: 50%;
+  width: 1920px; height: 1080px;
+  transform-origin: 0 0;
+  overflow: hidden;
+  background: var(--sky);
+}
+
+/* ---------- the ocean: one tall column the deck sinks through ---------- */
+#ocean {
+  position: absolute; left: 0; top: 0; width: 1920px;
+  transition: transform 1.4s var(--ease);
+  will-change: transform;
+}
+#ocean .sky {
+  position: absolute; left: 0; width: 100%; top: 0;
+  background:
+    radial-gradient(1200px 600px at 75% 10%, rgba(103,220,203,.07), transparent 70%),
+    linear-gradient(180deg, #08101E 0%, var(--sky) 100%);
+}
+#ocean .sea {
+  position: absolute; left: 0; width: 100%;
+  background: linear-gradient(180deg, #0A4A93 0%, var(--water) 6%, #06336B 17%, var(--deep) 33%, #03142E 50%, var(--abyss) 66%, var(--abyss) 100%);
+}
+#ocean .wave { position: absolute; left: 0; width: 100%; height: 90px; }
+#ocean .wave path { animation: swell 7s ease-in-out infinite alternate; }
+@keyframes swell { from { transform: translateX(0); } to { transform: translateX(-240px); } }
+#ocean .soundings { position: absolute; inset: 0; font-family: var(--mono); font-size: 15px; color: rgba(244,242,235,.06); pointer-events: none; }
+#ocean .soundings span { position: absolute; }
+#bubbles { position: absolute; left: 0; width: 100%; overflow: hidden; pointer-events: none; }
+#bubbles i {
+  position: absolute; bottom: -20px; border-radius: 50%;
+  border: 1.5px solid rgba(244,242,235,.22);
+  animation: rise linear infinite;
+}
+@keyframes rise { to { transform: translateY(-1400px) translateX(30px); opacity: 0; } }
+#rays { position: absolute; left: 0; width: 100%; height: 1500px; pointer-events: none;
+  background: repeating-linear-gradient(100deg, transparent 0 120px, rgba(140,200,255,.035) 120px 190px, transparent 190px 330px);
+  -webkit-mask: linear-gradient(180deg, #000, transparent);
+  mask: linear-gradient(180deg, #000, transparent);
+  animation: shimmer 9s ease-in-out infinite alternate;
+}
+@keyframes shimmer { from { transform: translateX(-60px) skewX(-2deg); } to { transform: translateX(60px) skewX(2deg); } }
+
+/* ---------- slides ---------- */
+.slide {
+  position: absolute; inset: 0;
+  padding: 120px 160px 110px;
+  opacity: 0; visibility: hidden;
+  transition: opacity .7s ease .35s, visibility 0s linear 1.05s;
+}
+.slide.on { opacity: 1; visibility: visible; transition: opacity .8s ease .45s, visibility 0s; }
+
+.kicker {
+  font-family: var(--mono); font-size: 20px; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--teal); display: flex; gap: 18px; align-items: center; margin-bottom: 34px;
+}
+.kicker b { font-weight: 500; color: var(--dim); }
+h1, h2 { font-family: var(--serif); font-weight: 400; letter-spacing: -.015em; line-height: 1.04; }
+h2 { font-size: 92px; max-width: 1400px; }
+h2 em, h1 em { font-style: italic; color: var(--teal); }
+.lede { font-size: 34px; line-height: 1.4; color: var(--dim); max-width: 1100px; margin-top: 30px; }
+.mono { font-family: var(--mono); }
+.num { font-variant-numeric: tabular-nums; }
+
+/* reveal children in sequence when the slide is on */
+.slide .r { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .9s cubic-bezier(.2,.8,.2,1); }
+.slide.on .r { opacity: 1; transform: none; }
+.slide.on .r.d1 { transition-delay: .7s; }
+.slide.on .r.d2 { transition-delay: .95s; }
+.slide.on .r.d3 { transition-delay: 1.2s; }
+.slide.on .r.d4 { transition-delay: 1.45s; }
+.slide.on .r.d5 { transition-delay: 1.7s; }
+.slide.on .r.d6 { transition-delay: 1.95s; }
+.slide.on .r.d7 { transition-delay: 2.2s; }
+.slide.on .r.d8 { transition-delay: 2.45s; }
+
+/* ---------- chrome: depth gauge, counter ---------- */
+#gauge {
+  position: absolute; right: 54px; top: 140px; bottom: 140px; width: 90px; z-index: 5;
+  font-family: var(--mono); font-size: 13px; color: rgba(244,242,235,.38);
+}
+#gauge .line { position: absolute; right: 0; top: 0; bottom: 0; width: 1px; background: rgba(244,242,235,.2); }
+#gauge .tick { position: absolute; right: 0; width: 10px; height: 1px; background: rgba(244,242,235,.3); }
+#gauge .tick.major { width: 20px; background: rgba(244,242,235,.45); }
+#gauge .surfaceMark { position: absolute; right: 28px; transform: translateY(-50%); color: var(--teal); letter-spacing: .12em; }
+#gauge .pin {
+  position: absolute; right: -7px; width: 15px; height: 15px; border-radius: 50%;
+  background: var(--chalk); box-shadow: 0 0 0 5px rgba(244,242,235,.12);
+  transform: translateY(-50%); transition: top 1.4s var(--ease);
+}
+#gauge .read {
+  position: absolute; right: 30px; transform: translateY(-50%); white-space: nowrap;
+  color: var(--chalk); font-size: 17px; transition: top 1.4s var(--ease); text-align: right;
+}
+#gauge .read small { display: block; font-size: 11px; letter-spacing: .16em; color: var(--dim); margin-top: 3px; }
+#count { position: absolute; left: 160px; bottom: 50px; z-index: 5; font-family: var(--mono); font-size: 16px; letter-spacing: .14em; color: rgba(244,242,235,.4); }
+#brandmark { position: absolute; right: 64px; bottom: 44px; z-index: 5; opacity: .55; display: flex; gap: 12px; align-items: center; font-family: var(--serif); font-size: 22px; }
+#brandmark svg { width: 26px; height: 26px; }
+
+/* ---------- 1 title ---------- */
+#s-title { display: flex; flex-direction: column; justify-content: center; }
+#s-title .mark { width: 168px; height: 168px; margin-bottom: 46px; }
+#s-title .mark path { transform-origin: center; }
+#s-title.on .mark .bankL { animation: shoreL 1.6s cubic-bezier(.2,.8,.2,1) .4s both; }
+#s-title.on .mark .bankR { animation: shoreR 1.6s cubic-bezier(.2,.8,.2,1) .4s both; }
+@keyframes shoreL { from { transform: translateX(-40px); opacity: 0; } }
+@keyframes shoreR { from { transform: translateX(40px); opacity: 0; } }
+#s-title h1 { font-size: 220px; line-height: .9; letter-spacing: -.035em; }
+#s-title .sub { font-size: 40px; color: var(--dim); margin-top: 34px; font-family: var(--serif); font-style: italic; }
+#s-title .tag { margin-top: 70px; font-size: 30px; display: flex; gap: 46px; }
+#s-title .tag span { display: flex; gap: 14px; align-items: baseline; }
+#s-title .tag i { font-style: normal; font-family: var(--mono); color: var(--teal); font-size: 22px; }
+
+/* ---------- 2 glass box ---------- */
+#s-glass .cols { display: grid; grid-template-columns: 1fr 780px; gap: 90px; align-items: center; height: 100%; }
+.explorer {
+  background: rgba(244,242,235,.05); border: 1px solid rgba(244,242,235,.16);
+  border-radius: 22px; padding: 34px 40px; position: relative;
+  box-shadow: 0 40px 120px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.08);
+  backdrop-filter: blur(6px);
+}
+.explorer .bar { display: flex; gap: 9px; margin-bottom: 26px; align-items: center; }
+.explorer .bar i { width: 12px; height: 12px; border-radius: 50%; background: rgba(244,242,235,.2); }
+.explorer .bar span { margin-left: 14px; font-family: var(--mono); font-size: 16px; color: var(--dim); background: rgba(0,0,0,.25); padding: 7px 14px; border-radius: 8px; flex: 1; }
+.explorer .row { display: flex; justify-content: space-between; align-items: baseline; padding: 17px 0; border-top: 1px solid rgba(244,242,235,.09); font-size: 24px; }
+.explorer .row label { color: var(--dim); font-size: 20px; }
+.explorer .row b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.explorer .row.hot b { color: var(--red); }
+.explorer .reticle {
+  position: absolute; right: 18px; width: 300px; height: 70px; border: 2px solid var(--red); border-radius: 10px;
+  bottom: 141px; opacity: 0;
+}
+#s-glass.on .reticle { animation: lock 2.4s ease 1.8s infinite; }
+@keyframes lock { 0% { opacity: 0; transform: scale(1.5); } 30% { opacity: 1; transform: scale(1); } 80% { opacity: 1; } 100% { opacity: .0; } }
+.feed { margin-top: 26px; font-family: var(--mono); font-size: 16px; line-height: 1.9; color: rgba(255,154,144,.85); height: 92px; overflow: hidden; }
+.feed div { white-space: nowrap; }
+/* the explorer sits inside a real glass box: a 3D cube of clear panes */
+.glassbox { perspective: 2000px; perspective-origin: 40% 0%; padding: 40px 30px 70px; position: relative; transform: scale(.92); transform-origin: 40% 50%; }
+.gb-scene { position: relative; transform-style: preserve-3d; transform: rotateX(-7deg) rotateY(-15deg); }
+#s-glass.on .gb-scene { animation: sway 9s ease-in-out infinite alternate; }
+@keyframes sway { from { transform: rotateX(-7deg) rotateY(-17deg); } to { transform: rotateX(-5deg) rotateY(-9deg); } }
+.gb-scene .explorer { transform: translateZ(0); background: rgba(10,20,36,.72); backdrop-filter: none; box-shadow: 0 30px 80px rgba(0,0,0,.45); }
+.gb-face { position: absolute; pointer-events: none; border: 1.5px solid rgba(220,240,255,.42); border-radius: 6px;
+  background: linear-gradient(135deg, rgba(200,230,255,.10), rgba(200,230,255,.025) 45%, rgba(200,230,255,.07)); }
+.gb-front { inset: -28px; transform: translateZ(70px); overflow: hidden;
+  border-color: rgba(240,250,255,.72); box-shadow: inset 0 0 0 1px rgba(255,255,255,.05), inset 0 2px 0 rgba(255,255,255,.35), inset 2px 0 0 rgba(255,255,255,.2);
+  background: linear-gradient(160deg, rgba(220,240,255,.10), rgba(220,240,255,.015) 35%, rgba(220,240,255,0) 60%, rgba(220,240,255,.05)); }
+.gb-front .glare { position: absolute; top: -40%; left: -60%; width: 34%; height: 180%; transform: rotate(24deg);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.10) 40%, rgba(255,255,255,.18) 50%, rgba(255,255,255,.10) 60%, transparent); }
+.gb-front .glare.thin { width: 7%; margin-left: 9%; opacity: .7; }
+#s-glass.on .gb-front .glare:not(.still) { animation: glare 7s ease-in-out 1s infinite; }
+@keyframes glare { 0% { left: -60%; } 45%, 100% { left: 130%; } }
+.gb-front .glare.still { left: 58%; width: 18%; opacity: .55; }
+.gb-back { inset: -28px; transform: translateZ(-70px); background: rgba(160,200,240,.035); border-color: rgba(220,240,255,.16); }
+.gb-top { left: -28px; right: -28px; top: -28px; height: 140px; transform-origin: top center; transform: translateZ(-70px) rotateX(90deg);
+  background: linear-gradient(180deg, rgba(220,240,255,.08), rgba(220,240,255,.24)); border-color: rgba(240,250,255,.65); }
+.gb-bottom { left: -28px; right: -28px; bottom: -28px; height: 140px; transform-origin: bottom center; transform: translateZ(-70px) rotateX(-90deg);
+  background: rgba(160,200,240,.05); border-color: rgba(220,240,255,.18); }
+.gb-side { top: -28px; bottom: -28px; right: -28px; width: 140px; transform-origin: right center; transform: translateZ(-70px) rotateY(90deg);
+  background: linear-gradient(90deg, rgba(220,240,255,.06), rgba(220,240,255,.20)); border-color: rgba(240,250,255,.6); }
+.gb-left { top: -28px; bottom: -28px; left: -28px; width: 140px; transform-origin: left center; transform: translateZ(-70px) rotateY(-90deg);
+  background: rgba(160,200,240,.04); border-color: rgba(220,240,255,.16); }
+.gb-floor { position: absolute; left: 6%; right: 6%; bottom: 8px; height: 60px; border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,.55), rgba(0,0,0,0) 70%); filter: blur(6px); }
+.gb-floor::after { content: ""; position: absolute; left: 12%; right: 12%; top: 18px; height: 3px; border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(200,235,255,.35), rgba(200,235,255,0) 70%); }
+#s-glass .quote { font-family: var(--serif); font-size: 46px; font-style: italic; color: var(--dim); margin-top: 50px; line-height: 1.25; max-width: 760px; }
+
+/* ---------- 3 who it hurts ---------- */
+.cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; margin-top: 80px; }
+.card { border: 1px solid rgba(244,242,235,.16); border-radius: 22px; padding: 38px 34px 40px; background: rgba(244,242,235,.035); min-height: 360px; }
+.card .ico { font-family: var(--mono); color: var(--teal); font-size: 18px; letter-spacing: .18em; }
+.card h3 { font-family: var(--serif); font-weight: 400; font-size: 50px; margin: 22px 0 18px; }
+.card p { font-size: 26px; line-height: 1.42; color: var(--dim); }
+#s-hurt .foot { margin-top: 70px; font-family: var(--serif); font-size: 44px; font-style: italic; }
+#s-hurt .foot span { color: var(--dim); }
+
+/* ---------- 4 the surface ---------- */
+#s-surface { padding-top: 96px; }
+#s-surface .above, #s-surface .below { position: absolute; left: 160px; right: 220px; }
+#s-surface .above { top: 96px; }
+#s-surface .below { top: 600px; }
+.zone { display: flex; align-items: baseline; gap: 22px; margin-bottom: 18px; }
+.zone b { font-family: var(--serif); font-weight: 400; font-size: 44px; }
+.zone span { font-size: 22px; color: var(--dim); }
+.tok { display: grid; grid-template-columns: 54px 1fr 230px 170px; align-items: center; height: 74px; border-top: 1px solid rgba(244,242,235,.1); font-size: 26px; width: 880px; }
+.badge { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-size: 20px; }
+.badge.usdc { background: #2775CA; color: #fff; }
+.badge.wbtc { background: #F7931A; color: var(--sky); }
+.tok .amt { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; padding-right: 30px; }
+.pill { border: 1.5px solid rgba(244,242,235,.45); border-radius: 999px; padding: 7px 0; font-size: 20px; text-align: center; width: 160px; box-sizing: border-box; white-space: nowrap; }
+.pill.go { background: var(--chalk); color: var(--sky); border-color: var(--chalk); font-weight: 600; }
+#s-surface .headline { position: absolute; right: 230px; top: 140px; width: 560px; font-family: var(--serif); font-size: 58px; line-height: 1.1; text-align: right; }
+#s-surface .headline em { color: var(--teal); }
+#s-surface .caption { position: absolute; right: 230px; top: 640px; width: 520px; text-align: right; }
+#s-surface .caption p { font-size: 28px; line-height: 1.45; color: var(--dim); margin-bottom: 26px; }
+#s-surface .caption p b { color: var(--chalk); font-weight: 500; }
+.diver { position: absolute; left: 1070px; top: 300px; width: 44px; height: 44px; border-radius: 50%; background: #F7931A; color: var(--sky); font-weight: 700; display: grid; place-items: center; font-size: 22px; opacity: 0; }
+#s-surface.on .diver { animation: dive 4.2s cubic-bezier(.55,0,.6,1) 1.6s infinite; }
+@keyframes dive {
+  0% { opacity: 0; transform: translateY(0); }
+  8% { opacity: 1; }
+  38% { transform: translateY(240px); filter: none; }
+  48% { transform: translateY(330px); filter: blur(1px); opacity: .9; }
+  75% { transform: translateY(420px); opacity: .0; filter: blur(5px); }
+  100% { opacity: 0; transform: translateY(420px); }
+}
+.ring { position: absolute; left: 1032px; top: 524px; width: 120px; height: 30px; border-radius: 50%; border: 2px solid rgba(244,242,235,.7); opacity: 0; }
+#s-surface.on .ring { animation: ring 4.2s ease-out 1.6s infinite; }
+@keyframes ring { 0%, 38% { opacity: 0; transform: scale(.2); } 42% { opacity: .9; } 70% { opacity: 0; transform: scale(1.4); } 100% { opacity: 0; } }
+.tok .ghost { text-align: right; padding-right: 30px; color: var(--dim); font-family: var(--mono); font-size: 20px; letter-spacing: .1em; }
+
+/* ---------- 5 private op ---------- */
+.lanes { display: grid; grid-template-columns: 1.15fr 70px 1fr 70px 1.15fr; margin-top: 70px; align-items: stretch; }
+.lane { border-radius: 24px; padding: 38px 36px; border: 1px solid rgba(244,242,235,.16); background: rgba(2,10,24,.32); }
+.lane h4 { font-family: var(--mono); font-weight: 500; font-size: 22px; letter-spacing: .2em; text-transform: uppercase; color: var(--teal); margin-bottom: 24px; }
+.lane li { list-style: none; font-size: 36px; line-height: 1.3; padding: 14px 0; border-top: 1px solid rgba(244,242,235,.08); }
+.lane li.x { color: rgba(244,242,235,.38); text-decoration: line-through; text-decoration-color: rgba(255,122,110,.7); text-decoration-thickness: 2px; }
+.lane li.y::before { content: "◉ "; color: var(--green); font-size: 18px; }
+.lane.home { background: rgba(103,220,203,.08); border-color: rgba(103,220,203,.35); }
+.arrow { display: grid; place-items: center; position: relative; }
+.arrow::before { content: ""; position: absolute; left: 10px; right: 10px; top: 50%; height: 2px; background: repeating-linear-gradient(90deg, rgba(244,242,235,.5) 0 8px, transparent 8px 16px); }
+.arrow .pk { position: absolute; top: calc(50% - 9px); left: 0; width: 18px; height: 18px; border-radius: 4px; background: var(--teal); box-shadow: 0 0 22px var(--teal); opacity: 0; }
+#s-private.on .arrow .pk { animation: packet 2.6s ease-in-out 2s infinite; }
+#s-private.on .arrow.a2 .pk { animation-delay: 3.3s; }
+@keyframes packet { 0% { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { left: calc(100% - 18px); opacity: 0; } }
+#s-private .note { margin-top: 46px; font-size: 26px; color: var(--dim); }
+#s-private .note b { color: var(--chalk); font-weight: 500; }
+
+/* ---------- 6 salted positions ---------- */
+#s-salt .grid { display: grid; grid-template-columns: 860px 1fr; gap: 100px; margin-top: 60px; }
+.chain { position: relative; }
+.chain .box { border: 1px solid rgba(244,242,235,.2); border-radius: 16px; padding: 18px 26px; font-family: var(--mono); font-size: 22px; background: rgba(2,10,24,.35); margin-bottom: 30px; position: relative; }
+.chain .box small { display: block; font-family: var(--sans); font-size: 17px; color: var(--dim); margin-top: 6px; }
+.chain .box:not(:last-child)::after { content: "↓"; position: absolute; left: 40px; bottom: -32px; color: var(--dim); font-family: var(--sans); font-size: 22px; }
+.chain .veil { position: absolute; left: -24px; right: -24px; top: -20px; height: 318px; border: 1.5px dashed rgba(103,220,203,.55); border-radius: 22px; }
+.chain .veil span { position: absolute; top: -14px; right: 26px; background: #072B5D; padding: 0 12px; font-family: var(--mono); font-size: 15px; letter-spacing: .2em; color: var(--teal); }
+.chain .pub { border-color: rgba(244,242,235,.5); background: rgba(244,242,235,.08); }
+.chain .pub-tag { position: absolute; right: 26px; top: 18px; font-family: var(--mono); font-size: 15px; letter-spacing: .2em; color: var(--amber); }
+.facts p { font-size: 30px; line-height: 1.4; margin-bottom: 34px; padding-left: 34px; position: relative; }
+.facts p::before { content: ""; position: absolute; left: 0; top: 16px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--teal); }
+.facts p span { color: var(--dim); }
+
+/* ---------- 7 bounds ---------- */
+#s-bounds .grid { display: grid; grid-template-columns: 1fr 840px; gap: 100px; margin-top: 30px; align-items: start; }
+.claims { display: flex; flex-direction: column; gap: 46px; margin-top: 50px; }
+.claim label { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 19px; color: var(--dim); margin-bottom: 14px; letter-spacing: .06em; }
+.claim label b { color: var(--green); font-weight: 500; opacity: 0; transition: opacity .4s; }
+.slide.on .claim label b { opacity: 1; transition-delay: 2.8s; }
+.track { position: relative; height: 46px; }
+.track::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: rgba(244,242,235,.25); }
+.band { position: absolute; top: 6px; bottom: 6px; border-radius: 8px; background: rgba(103,220,203,.18); border: 1.5px solid var(--teal); }
+.truth { position: absolute; top: -4px; bottom: -4px; width: 4px; background: var(--chalk); border-radius: 2px; left: 0; transition: left 2.2s cubic-bezier(.3,1.3,.5,1) .9s; }
+#s-bounds.on .truth { left: var(--x); }
+#s-bounds .points p { font-size: 29px; line-height: 1.42; margin-bottom: 30px; color: var(--dim); }
+#s-bounds .points p b { color: var(--chalk); font-weight: 500; }
+
+/* ---------- 8 tide ---------- */
+#s-tide .grid { display: grid; grid-template-columns: 700px 1fr; gap: 120px; height: 100%; align-items: center; }
+.tank { position: relative; width: 520px; height: 760px; border-radius: 34px; border: 2px solid rgba(244,242,235,.35); overflow: hidden; background: rgba(2,10,24,.45); margin-left: 40px; }
+.tank .water { position: absolute; left: 0; right: 0; bottom: 0; height: 7%; background: #0A5BB8; transition: height 1.3s cubic-bezier(.34,1.45,.64,1), background-color .8s; }
+.tank .water svg { position: absolute; top: -18px; left: 0; width: 200%; height: 20px; animation: slosh 3s linear infinite; }
+@keyframes slosh { to { transform: translateX(-50%); } }
+.tank .sell, .tank .word, .tank .hf { z-index: 2; }
+.tank .sell { position: absolute; left: 0; right: 0; top: 20%; border-top: 3px dashed var(--amber); }
+.tank .sell span { position: absolute; right: 18px; top: -40px; font-family: var(--mono); font-size: 18px; color: var(--amber); letter-spacing: .1em; }
+.tank .word { position: absolute; left: 0; right: 0; top: 40%; text-align: center; font-family: var(--serif); font-style: italic; font-size: 64px; transition: color .6s; text-shadow: 0 4px 30px rgba(0,0,0,.4); }
+.tank .hf { position: absolute; left: 0; right: 0; top: calc(40% + 86px); text-align: center; font-family: var(--mono); font-size: 22px; color: var(--dim); }
+#s-tide input[type=range] { width: 520px; margin: 44px 0 0 40px; accent-color: var(--teal); }
+#s-tide .ctl { font-family: var(--mono); font-size: 17px; color: var(--dim); margin-left: 40px; margin-top: 12px; display: flex; justify-content: space-between; width: 520px; letter-spacing: .08em; }
+#s-tide .legend { margin-top: 50px; display: grid; grid-template-columns: auto 1fr; gap: 16px 22px; font-size: 26px; align-items: center; }
+#s-tide .legend i { width: 22px; height: 22px; border-radius: 6px; display: block; }
+
+/* ---------- 10 leaks ---------- */
+#s-leaks .list { margin-top: 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 0 90px; }
+#s-leaks .item { border-top: 1px solid rgba(244,242,235,.15); padding: 30px 0 34px; display: grid; grid-template-columns: 70px 1fr; }
+#s-leaks .item .n { font-family: var(--mono); color: var(--amber); font-size: 20px; padding-top: 8px; }
+#s-leaks .item h5 { font-family: var(--serif); font-weight: 400; font-size: 42px; margin-bottom: 10px; }
+#s-leaks .item p { font-size: 25px; color: var(--dim); line-height: 1.42; }
+#s-leaks .item p b { color: var(--chalk); font-weight: 500; }
+
+/* ---------- 11 pool ---------- */
+#s-pool .grid { display: grid; grid-template-columns: 1fr 760px; gap: 90px; margin-top: 30px; }
+.steps { counter-reset: s; }
+.steps li { list-style: none; counter-increment: s; display: grid; grid-template-columns: 74px 1fr; padding: 22px 0; border-top: 1px solid rgba(244,242,235,.12); font-size: 27px; line-height: 1.4; }
+.steps li::before { content: "0" counter(s); font-family: var(--mono); color: var(--teal); font-size: 20px; padding-top: 5px; }
+.steps li span { color: var(--dim); }
+.tree { position: relative; height: 560px; }
+.tree svg { width: 100%; height: 100%; overflow: visible; }
+.tree .edge { stroke: rgba(244,242,235,.25); stroke-width: 2; fill: none; }
+.tree .path { stroke: var(--teal); stroke-width: 3.5; fill: none; stroke-dasharray: 700; stroke-dashoffset: 700; }
+#s-pool.on .tree .path { animation: draw 1.8s ease 2.2s forwards, glow 2.6s ease-in-out 4s infinite; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes glow { 50% { opacity: .45; } }
+.tree .leaf { fill: rgba(244,242,235,.12); stroke: rgba(244,242,235,.4); stroke-width: 1.5; }
+.tree .leaf.me { fill: rgba(103,220,203,.15); stroke: var(--teal); stroke-dasharray: 5 5; }
+.tree .leaf.no { fill: rgba(255,122,110,.12); stroke: rgba(255,122,110,.6); }
+.tree .rootn { fill: var(--teal); }
+.tree text { font-family: var(--mono); font-size: 15px; fill: var(--dim); }
+#s-pool .stats { display: flex; gap: 50px; margin-top: 18px; }
+#s-pool .stats div { font-size: 22px; color: var(--dim); }
+#s-pool .stats b { display: block; font-family: var(--serif); font-weight: 400; font-size: 54px; color: var(--chalk); }
+
+/* ---------- 12 solvency ---------- */
+#s-solv .grid { display: grid; grid-template-columns: 640px 1fr; gap: 90px; margin-top: 56px; }
+.request { border-radius: 22px; border: 1px solid rgba(244,242,235,.2); background: rgba(244,242,235,.05); padding: 34px 38px; }
+.request h6 { font-family: var(--mono); font-weight: 500; font-size: 17px; letter-spacing: .2em; color: var(--dim); margin-bottom: 18px; }
+.request .q { font-family: var(--mono); font-size: 27px; line-height: 1.6; }
+.request .q i { font-style: normal; color: var(--teal); }
+.request .verdict { margin-top: 26px; padding-top: 22px; border-top: 1px solid rgba(244,242,235,.14); font-size: 25px; display: flex; align-items: center; gap: 16px; opacity: 0; transition: opacity .6s ease 3.6s; }
+#s-solv.on .verdict { opacity: 1; }
+.request .verdict .ok { width: 38px; height: 38px; border-radius: 50%; background: var(--green); color: var(--abyss); display: grid; place-items: center; font-weight: 800; }
+.request .verdict code { font-family: var(--mono); color: var(--dim); font-size: 21px; }
+.cover { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.pos { border-radius: 18px; border: 1px solid rgba(244,242,235,.16); padding: 22px 24px; font-family: var(--mono); font-size: 18px; color: var(--dim); background: rgba(2,10,24,.35); transition: border-color .5s, background .5s, opacity .5s; }
+.pos b { display: block; font-family: var(--sans); color: var(--chalk); font-size: 30px; margin: 10px 0 2px; font-weight: 600; }
+.pos .who { color: rgba(244,242,235,.35); }
+#s-solv.on .pos.q { border-color: rgba(94,224,138,.55); background: rgba(94,224,138,.07); transition-delay: 2.2s; }
+#s-solv.on .pos.nq { opacity: .45; transition-delay: 2.2s; }
+#s-solv .under { margin-top: 36px; font-size: 26px; color: var(--dim); line-height: 1.45; }
+#s-solv .under b { color: var(--chalk); font-weight: 500; }
+
+/* ---------- 13 route ---------- */
+.route { position: relative; margin-top: 120px; width: 1540px; height: 420px; }
+.route svg.line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.route .track-path { stroke: rgba(244,242,235,.3); stroke-width: 3; fill: none; stroke-dasharray: 2 12; stroke-linecap: round; }
+.route .done-path { stroke: var(--teal); stroke-width: 4; fill: none; }
+#s-route.on .done-path { animation: draw 3.2s ease-in-out .9s forwards; }
+.stop { position: absolute; width: 200px; margin-left: -100px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.stop i { width: 22px; height: 22px; border-radius: 50%; background: var(--abyss); border: 3px solid var(--teal); flex: none; }
+.stop.above i { margin-top: 14px; }
+.stop.below i { margin-bottom: 14px; }
+.stop.next i { border-color: var(--amber); border-style: dashed; }
+.stop.next b { color: var(--amber); }
+.stop.here i { background: var(--teal); box-shadow: 0 0 0 10px rgba(103,220,203,.18); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 18px rgba(103,220,203,.06); } }
+.stop b { display: block; font-family: var(--serif); font-weight: 400; font-size: 27px; line-height: 1.15; }
+.stop span { display: block; font-family: var(--mono); font-size: 14px; color: var(--dim); margin-top: 6px; letter-spacing: .06em; }
+
+/* ---------- 14 close ---------- */
+#s-close { display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+#s-close .mark { width: 120px; height: 120px; margin-bottom: 60px; }
+#s-close h2 { font-size: 104px; max-width: 1500px; }
+#s-close .motto { margin-top: 64px; display: flex; gap: 44px; font-family: var(--serif); font-size: 44px; }
+#s-close .motto span:nth-child(2) { color: var(--teal); font-style: italic; }
+#s-close .meta { margin-top: 64px; font-family: var(--mono); font-size: 20px; letter-spacing: .14em; color: var(--dim); display: flex; gap: 46px; }
+#s-close .glow { position: absolute; left: 50%; top: 46%; width: 900px; height: 900px; transform: translate(-50%,-50%); background: radial-gradient(circle, rgba(103,220,203,.12), transparent 60%); pointer-events: none; animation: breathe 6s ease-in-out infinite; }
+@keyframes breathe { 50% { opacity: .5; transform: translate(-50%,-50%) scale(1.08); } }
+
+/* ---------- live demo ---------- */
+.demo-steps { margin-top: 80px; display: flex; flex-direction: column; gap: 26px; max-width: 1400px; }
+.dstep { display: grid; grid-template-columns: 110px 1fr auto; align-items: center; padding: 34px 40px; border-radius: 24px; border: 1px solid rgba(103,220,203,.35); background: rgba(103,220,203,.07); }
+.dstep .dn { font-family: var(--mono); font-size: 26px; color: var(--teal); }
+.dstep h3 { font-family: var(--serif); font-weight: 400; font-size: 58px; }
+.dstep p { font-size: 27px; color: var(--dim); margin-top: 6px; }
+.dstep .dt { font-family: var(--mono); font-size: 22px; color: var(--amber); letter-spacing: .08em; }
+#s-demo .cue { margin-top: 60px; font-family: var(--mono); font-size: 24px; letter-spacing: .14em; color: var(--chalk); animation: nudge 1.6s ease-in-out infinite; }
+@keyframes nudge { 50% { transform: translateX(14px); } }
+#s-demo .kicker::before { content: ""; width: 14px; height: 14px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 0 rgba(255,122,110,.6); animation: live 1.4s ease-out infinite; }
+@keyframes live { to { box-shadow: 0 0 0 16px rgba(255,122,110,0); } }
+
+/* ---------- waiting ring: the proof running in the app ---------- */
+#wait { position: absolute; right: 190px; bottom: 80px; z-index: 6; display: flex; align-items: center; gap: 20px; opacity: 0; transition: opacity .6s; pointer-events: none; }
+#wait.show { opacity: 1; }
+#wait svg { width: 92px; height: 92px; transform: rotate(-90deg); }
+#wait circle { fill: none; stroke-width: 6; }
+#wait .bg { stroke: rgba(244,242,235,.14); }
+#wait .fg { stroke: var(--amber); stroke-linecap: round; stroke-dasharray: 264; stroke-dashoffset: 264; }
+#wait .txt { font-family: var(--mono); font-size: 16px; letter-spacing: .14em; color: var(--dim); line-height: 1.6; }
+#wait .txt b { display: block; font-size: 30px; color: var(--chalk); font-weight: 500; letter-spacing: 0; }
+#wait.done .fg { stroke: var(--green); }
+#wait.done .txt b { color: var(--green); }
+
+/* ---------- presenter notes (N) ---------- */
+#notes { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; padding: 30px 160px 40px; background: rgba(2,8,18,.94); border-top: 1px solid rgba(244,242,235,.2); display: none; font-size: 27px; line-height: 1.45; color: var(--chalk); }
+#notes.show { display: block; }
+#notes .meta { font-family: var(--mono); font-size: 18px; color: var(--dim); letter-spacing: .1em; margin-bottom: 12px; display: flex; gap: 40px; }
+#notes .meta b { color: var(--teal); font-weight: 500; }
+#notes .meta .late { color: var(--red); }
+
+/* ---------- fizz: bubbles rising over the underwater slides ---------- */
+#fizz { position: absolute; inset: 0; z-index: 1; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
+#fizz.on { opacity: 1; transition-delay: .7s; }
+#fizz.half { -webkit-mask: linear-gradient(180deg, transparent 0 52%, #000 58%); mask: linear-gradient(180deg, transparent 0 52%, #000 58%); }
+#fizz b { position: absolute; bottom: -40px; animation: fizzUp linear infinite; }
+#fizz b i { display: block; border-radius: 50%; animation: fizzSway ease-in-out infinite alternate;
+  border: 1.2px solid rgba(220,236,255,.28);
+  background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.35) 0 18%, rgba(255,255,255,.04) 30%, transparent 62%); }
+@keyframes fizzUp { 0% { transform: translateY(0); opacity: 0; } 8% { opacity: 1; } 85% { opacity: .8; } 100% { transform: translateY(-1180px); opacity: 0; } }
+@keyframes fizzSway { from { transform: translateX(-14px); } to { transform: translateX(14px); } }
+.slide { z-index: 2; }
+
+/* ---------- why logos ---------- */
+.stack { margin-top: 64px; display: flex; flex-direction: column; gap: 18px; max-width: 1500px; }
+.layer { display: grid; grid-template-columns: 340px 1fr; align-items: center; padding: 26px 34px; border-radius: 20px; border: 1px solid rgba(244,242,235,.16); background: rgba(2,10,24,.32); }
+.layer .lk { font-family: var(--mono); font-size: 19px; letter-spacing: .16em; color: var(--teal); }
+.layer .lv { font-size: 27px; line-height: 1.4; color: var(--dim); }
+.layer .lv b { color: var(--chalk); font-weight: 500; }
+#s-logos .without { margin-top: 44px; font-family: var(--serif); font-size: 38px; font-style: italic; }
+#s-logos .without span { color: var(--teal); }
+
+/* ---------- demo: real vs mocked ---------- */
+.honest { margin-top: 40px; display: flex; flex-direction: column; gap: 14px; font-size: 24px; color: var(--dim); max-width: 1400px; }
+.honest b { display: inline-block; width: 120px; font-family: var(--mono); font-size: 17px; letter-spacing: .16em; font-weight: 500; }
+.honest .real { color: var(--green); }
+.honest .mock { color: var(--amber); }
+#s-demo .demo-steps { margin-top: 56px; }
+#s-demo .cue { margin-top: 40px; }
+
+/* ---------- milestones ---------- */
+.miles { margin-top: 64px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+.mile { border-radius: 24px; border: 1px solid rgba(244,242,235,.16); background: rgba(2,10,24,.32); padding: 34px 34px 30px; display: flex; flex-direction: column; }
+.mile:first-child { border-color: rgba(103,220,203,.4); background: rgba(103,220,203,.06); }
+.mile .mh { font-family: var(--serif); font-size: 52px; display: flex; align-items: baseline; gap: 18px; margin-bottom: 22px; }
+.mile .mh span { font-family: var(--mono); font-size: 20px; color: var(--teal); }
+.mile li { list-style: none; font-size: 25px; line-height: 1.38; padding: 12px 0 12px 34px; border-top: 1px solid rgba(244,242,235,.08); position: relative; }
+.mile li::before { content: "○"; position: absolute; left: 0; color: var(--dim); }
+.mile li.ok::before { content: "✓"; color: var(--green); }
+.mile li span { color: var(--dim); }
+.mile .own { margin-top: auto; padding-top: 22px; font-family: var(--mono); font-size: 18px; letter-spacing: .12em; color: var(--dim); }
+.mile .own b { color: var(--amber); font-weight: 500; }
+.mile .own span { color: var(--chalk); }
+
+/* ---------- title: for whom ---------- */
+#s-title .for { margin-top: 40px; font-family: var(--mono); font-size: 20px; letter-spacing: .2em; color: var(--teal); }
+#s-title .tag { margin-top: 44px; }
+
+/* ---------- 05 technical quality ---------- */
+.tq { margin-top: 50px; display: grid; grid-template-columns: 1.15fr 1fr 1fr 1fr; gap: 22px; }
+.tcol { border-radius: 20px; border: 1px solid rgba(244,242,235,.16); background: rgba(2,10,24,.32); padding: 26px 26px; }
+.tcol h4 { font-family: var(--mono); font-weight: 500; font-size: 17px; letter-spacing: .18em; text-transform: uppercase; color: var(--teal); margin-bottom: 16px; }
+.tcol.warn { border-color: rgba(255,179,64,.35); }
+.tcol.warn h4 { color: var(--amber); }
+.tcol li { list-style: none; font-size: 28px; line-height: 1.3; padding: 13px 0; border-top: 1px solid rgba(244,242,235,.08); color: var(--dim); }
+.tcol li b { color: var(--chalk); font-weight: 500; }
+.arch .box { border: 1px solid rgba(244,242,235,.25); border-radius: 12px; padding: 12px 14px; font-size: 26px; background: rgba(244,242,235,.04); }
+.arch .box small { display: block; font-size: 20px; color: var(--dim); margin-top: 4px; line-height: 1.35; }
+.arch .arr { font-family: var(--mono); font-size: 18px; color: var(--dim); padding: 8px 0 8px 14px; }
+
+/* ---------- 06 track fit ---------- */
+.tb { margin-top: 50px; display: grid; grid-template-columns: 1fr 820px; gap: 60px; }
+.checks li { list-style: none; position: relative; padding: 0 0 30px 52px; font-size: 28px; line-height: 1.4; color: var(--dim); }
+.checks li::before { content: "✓"; position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: rgba(94,224,138,.16); color: var(--green); display: grid; place-items: center; font-size: 17px; }
+.checks li b { display: block; font-family: var(--serif); font-weight: 400; font-size: 40px; color: var(--chalk); margin-bottom: 2px; }
+table.who { border-collapse: collapse; font-size: 30px; align-self: start; width: 100%; }
+table.who th { text-align: left; font-family: var(--mono); font-weight: 500; font-size: 16px; letter-spacing: .16em; text-transform: uppercase; color: var(--teal); padding: 0 16px 14px; }
+table.who td { padding: 17px 16px; border-top: 1px solid rgba(244,242,235,.1); color: var(--dim); line-height: 1.3; vertical-align: top; }
+table.who td:first-child { color: var(--chalk); font-family: var(--serif); font-size: 32px; white-space: nowrap; }
+table.who td em { color: var(--teal); }
+
+/* ---------- 07 ask ---------- */
+.ask { margin-top: 30px; display: flex; gap: 22px; align-items: baseline; font-size: 22px; color: var(--dim); white-space: nowrap; }
+.ask b { font-family: var(--mono); font-weight: 500; font-size: 18px; letter-spacing: .18em; color: var(--teal); }
+.ask span + span::before { content: "·"; margin-right: 22px; color: rgba(244,242,235,.3); }
+.ask em { font-style: normal; color: var(--amber); font-family: var(--mono); font-size: 20px; }
+.ask strong { color: var(--chalk); font-weight: 600; font-size: 26px; }
+
+/* ---------- print: one page per slide, no motion ---------- */
+@media print {
+  @page { size: 1920px 1080px; margin: 0; }
+  html, body { overflow: visible; height: auto; background: none; }
+  #stage { position: relative; left: 0; top: 0; transform: none !important; overflow: visible; height: auto; background: none; }
+  #ocean, #gauge, #count, #brandmark, #fizz { display: none; }
+  .slide { position: relative; height: 1080px; opacity: 1; visibility: visible; page-break-after: always; break-after: page; overflow: hidden; background: var(--bg); }
+  .slide .r, .slide * { opacity: 1 !important; transform: none; transition: none !important; animation: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: .01s !important; transition-delay: 0s !important; }
+}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="ocean">
+    <div class="sky"></div>
+    <div id="rays"></div>
+    <div class="sea"></div>
+    <div id="bubbles"></div>
+    <svg class="wave" viewBox="0 0 2400 90" preserveAspectRatio="none" style="width:2400px">
+      <path fill="#0A4A93" d="M0 46 C120 18 240 18 360 46 S600 74 720 46 960 18 1080 46 1320 74 1440 46 1680 18 1800 46 2040 74 2160 46 2400 18 2400 46 V90 H0Z"/>
+    </svg>
+    <div class="soundings"></div>
+  </div>
+
+  <!-- 1 · title -->
+  <section class="slide" id="s-title" data-t="0:00" data-notes="Bosphorus: a private lending market on Logos, for anyone who borrows or lends size: funds, DAO treasuries, founders, traders. Borrow without selling, lend without being watched." data-depth="sky">
+    <svg class="mark" viewBox="0 0 256 256"><path class="bankL" fill="#F4F2EB" d="M40 32H132C132 80 84 80 84 128S116 176 116 224H40Z"/><path class="bankR" fill="#67DCCB" d="M164 32H216V224H148C148 176 116 176 116 128S164 80 164 32Z"/></svg>
+    <h1 class="r d1">Bosphorus</h1>
+    <div class="sub r d2">Private lending on the Logos Execution Zone</div>
+    <div class="tag r d4"><span><i>↓</i>Borrow without selling.</span><span><i>↓</i>Lend without being watched.</span></div>
+  </section>
+
+  <!-- 2 · glass box -->
+  <section class="slide" id="s-glass" data-t="0:20" data-notes="Every lending market today is a glass box. Collateral, debt, liquidation price: anyone can read them, and bots do. A fund can&#x27;t take a position without showing everyone; a founder borrowing against their token looks like they&#x27;re selling; a public liquidation price is a target." data-depth="sky">
+    <div class="cols">
+      <div>
+        <div class="kicker r">02 <b>The problem</b></div>
+        <h2 class="r d1">Every lending market today is a <em>glass box.</em></h2>
+        <p class="lede r d2">Your collateral, your debt and the price at which you get sold out. Anyone can read them, and bots do.</p>
+        <p class="quote r d3">“Large borrowers get hunted.”</p>
+      </div>
+      <div class="r d2">
+       <div class="glassbox">
+        <div class="gb-scene">
+        <div class="gb-face gb-back"></div><div class="gb-face gb-left"></div><div class="gb-face gb-bottom"></div>
+        <div class="gb-face gb-top"></div><div class="gb-face gb-side"></div>
+        <div class="explorer">
+          <div class="bar"><i></i><i></i><i></i><span>explorer / position / 0x7a3f…c91e</span></div>
+          <div class="row"><label>Owner</label><b class="mono">0x51C2…e04B · fund-treasury.eth</b></div>
+          <div class="row"><label>Collateral</label><b>412.00 WBTC</b></div>
+          <div class="row"><label>Debt</label><b>21,400,000 USDC</b></div>
+          <div class="row"><label>Health</label><b>1.08</b></div>
+          <div class="row hot"><label>Liquidation price</label><b>$63,112</b></div>
+          <div class="reticle"></div>
+          <div class="feed" id="feed"></div>
+        </div>
+        <div class="gb-face gb-front"><i class="glare still"></i><i class="glare"></i><i class="glare thin"></i></div>
+        </div>
+        <div class="gb-floor"></div>
+       </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4 · the surface -->
+  <section class="slide" id="s-surface" data-t="1:10" data-notes="Bosphorus is a real money market (Morpho Blue isolated markets, Aave v3 risk controls) where your position can live below the surface. Public balances above; one click, Dive, moves them into a private account. People see the money leave, not where it went." data-depth="surface">
+    <div class="above">
+      <div class="kicker r">03 <b>The solution</b></div>
+      <div class="zone r d1"><b>Above the surface</b><span>Everyday · anyone can see</span></div>
+      <div class="tok r d1"><div class="badge usdc">$</div><div>USDC</div><div class="amt">120,000.00</div><div class="pill">Dive ↓</div></div>
+      <div class="tok r d2"><div class="badge wbtc">₿</div><div>WBTC</div><div class="amt">2.00</div><div class="pill go">Dive 0.5 ↓</div></div>
+    </div>
+    <div class="headline r d2">Your position can live <em>below the surface.</em></div>
+    <div class="diver">₿</div>
+    <div class="ring"></div>
+    <div class="below">
+      <div class="zone r d3"><b>Below the surface</b><span>Private · only this computer can see</span></div>
+      <div class="tok r d4"><div class="badge wbtc">₿</div><div>WBTC</div><div class="amt">0.50</div><div class="pill">Surface ↑</div></div>
+      <div class="tok r d4"><div class="badge usdc">$</div><div>USDC borrowed</div><div class="ghost">75,000.00</div><div class="pill">Pay back</div></div>
+    </div>
+    <div class="caption">
+      <p class="r d5">People see it leave Everyday, <b>not where it went.</b></p>
+      <p class="r d6">Isolated markets like Morpho Blue. Risk controls from Aave v3. <b>The same rules as a public market.</b></p>
+    </div>
+  </section>
+
+  <!-- why logos -->
+  <section class="slide" id="s-logos" data-depth="2" data-t="1:55" data-notes="Why Logos: on LEZ, privacy is an account type. A private account runs our public lending program inside its own proof, in one transaction with the public market. The sequencer verifies it with LEZ&#x27;s circuit, the wallet keeps keys on the laptop, the app is a Basecamp module. Without Logos we&#x27;d have to build the shielded pool, verifier and wallet first.">
+    <div class="kicker r">03 <b>Why Logos</b></div>
+    <h2 class="r d1">On LEZ, privacy is <em>an account type.</em></h2>
+    <div class="stack">
+      <div class="layer r d2"><div class="lk">LEZ PRIVATE ACCOUNTS</div><div class="lv">Your private account runs the public lending program <b>inside its own proof</b>. One transaction: private on your side, public on the market's.</div></div>
+      <div class="layer r d3"><div class="lk">LEZ SEQUENCER</div><div class="lv">Verifies the proof with <b>LEZ's privacy circuit</b>. We didn't write a shielded pool or a verifier.</div></div>
+      <div class="layer r d4"><div class="lk">LEZ WALLET</div><div class="lv">Keys, mnemonic and private state <b>stay on this laptop</b>. Positions can be recovered from the mnemonic.</div></div>
+      <div class="layer r d5"><div class="lk">LOGOS BASECAMP</div><div class="lv">The app is a <b>Basecamp module</b>, wallet and markets included, over a C ABI to our client.</div></div>
+    </div>
+    <p class="without r d6">Without Logos: build your own shielded pool, verifier and wallet first. <span>Here they're the platform.</span></p>
+  </section>
+
+  <!-- live demo -->
+  <section class="slide" id="s-demo" data-t="2:45" data-notes="Say the strip: real proofs, real LEZ private accounts, our program, the Basecamp app; mocked: local sequencer, test tokens, we publish the price. Switch to Basecamp, show above and below the surface, open the market, Position, private account, Add security, confirm. As soon as the progress card shows, come back." data-depth="1">
+    <div class="kicker r">04 · LIVE <b>On this laptop, against a local LEZ sequencer</b></div>
+    <h2 class="r d1">Let's borrow <em>below the surface.</em></h2>
+    <div class="demo-steps">
+      <div class="dstep r d2"><div class="dn">01</div><div><h3>Add security</h3><p>WBTC goes into the market from a private account.</p></div><div class="dt">≈ 1 min proof</div></div>
+      <div class="dstep r d3"><div class="dn">02</div><div><h3>Borrow</h3><p>USDC comes out into the same private account.</p></div><div class="dt">≈ 1 min proof</div></div>
+    </div>
+    <div class="honest r d4">
+      <div><b class="real">REAL</b>Full proofs on this laptop's GPU · LEZ v0.3.1 private accounts · our lending program · the Basecamp app</div>
+      <div><b class="mock">MOCKED</b>A local sequencer (testnet blocks are slow today) · test tokens named WBTC and USDC · we publish the price</div>
+    </div>
+    <p class="cue r d5">→ switch to Basecamp</p>
+  </section>
+
+  <!-- 5 · a private borrow -->
+  <section class="slide" id="s-private" data-t="3:15" data-notes="While Add security proves: this is what is happening right now. The lending program&#x27;s plan runs in the zkVM on this laptop; keys, balances and the position&#x27;s salt never leave. The sequencer checks the proof; everyone else sees the debt and market totals, not who owns it or where the money went. Ring runs out: back to the app, start Borrow. While it proves: that progress bar is a zero-knowledge proof, ten minutes on this M1&#x27;s CPU and about a minute on its GPU (Metal, or CUDA on NVIDIA), no servers. Then show the borrowed USDC and the water level, and come back for section 05." data-depth="1" data-wait="60">
+    <div class="kicker r">⏱ <b>While “Add security” proves</b></div>
+    <h2 class="r d1">The proof goes out.<br><em>Your identity doesn't.</em></h2>
+    <div class="lanes">
+      <div class="lane home r d2">
+        <h4>Your laptop</h4>
+        <ul>
+          <li>Keys</li>
+          <li>Builds the proof</li>
+        </ul>
+      </div>
+      <div class="arrow r d3"><div class="pk"></div></div>
+      <div class="lane r d3">
+        <h4>Sequencer</h4>
+        <ul>
+          <li>Checks the proof</li>
+        </ul>
+      </div>
+      <div class="arrow a2 r d4"><div class="pk"></div></div>
+      <div class="lane r d4">
+        <h4>Everyone else</h4>
+        <ul>
+          <li class="y">The debt</li>
+          <li class="x">Who owns it</li>
+          <li class="x">Where the money went</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- technical quality -->
+  <section class="slide" id="s-tech" data-depth="5" data-t="6:00" data-notes="Architecture: everything runs on the user&#x27;s laptop (app, client, maths, prover, wallet); on LEZ, three programs: lending, oracle, token. Maths is pure Rust, property-tested. Tests cover money safety and authorisation, plus an end-to-end script per phase, the testnet scenarios (public and private), and fault injection on the app (lost replies, restarts mid-proof); 38 review findings are logged and tracked. Threat model: an offline or hostile owner can&#x27;t block liquidation; each market refuses prices past its age limit; the screener approves deposits but can&#x27;t move funds; client claims are intervals, and any value inside leaves lenders no worse off. Limits, plainly: amounts and timing can link actions, small anonymity set, position sizes are still public.">
+    <div class="kicker r">05 <b>Technical quality and security</b></div>
+    <h2 class="r d1" style="font-size:80px">Built to be checked, <em>honest about its limits.</em></h2>
+    <div class="tq">
+      <div class="tcol r d2"><h4>Architecture</h4>
+        <div class="arch"><div class="box">Your laptop<small>app · prover · wallet</small></div><div class="arr">↓ proof</div><div class="box">LEZ<small>lending · oracle · token</small></div><div class="arr">↑ liquidate</div><div class="box">Keeper · feed · screener</div></div>
+      </div>
+      <div class="tcol r d3"><h4>Tested</h4><ul>
+        <li><b>Property-tested</b> maths</li>
+        <li>Testnet scenarios pass</li>
+        <li>Fault injection</li>
+        <li><b>38 findings</b> tracked</li></ul></div>
+      <div class="tcol r d4"><h4>Threat model</h4><ul>
+        <li><b>Owner gone:</b> anyone liquidates</li>
+        <li><b>Stale price:</b> refused</li>
+        <li><b>Screener:</b> can't move funds</li></ul></div>
+      <div class="tcol warn r d5"><h4>Known limits</h4><ul>
+        <li>Amounts and timing link</li>
+        <li>Small anonymity set</li>
+        <li>Sizes are public</li></ul></div>
+    </div>
+  </section>
+
+  <!-- track fit -->
+  <section class="slide" id="s-track" data-depth="6" data-t="7:00" data-notes="Track B, point by point. Private by default: the app&#x27;s dive is private and screened unless you choose otherwise. Your keys and data stay on your laptop; there&#x27;s no server and no account with us. Minimal data: the chain gets a proof and public effects, nothing else. Who sees and controls what: anyone sees debt, health and market totals but not who, and can only liquidate unhealthy loans; the screener sees public deposits and decides approvals; the price feed sees nothing of yours and sets the price within age limits; an auditor gets a yes and a pseudonym. Impact: privacy that funds and institutions can actually use, because they can prove where money came from and that they&#x27;re solvent.">
+    <div class="kicker r">06 <b>Track fit and impact · Track B</b></div>
+    <h2 class="r d1" style="font-size:80px">Sovereign by default. <em>Fit for funds.</em></h2>
+    <div class="tb">
+      <ul class="checks">
+        <li class="r d2"><b>Privacy by default</b>Private and screened</li>
+        <li class="r d3"><b>Your keys, your data</b>No server, no account</li>
+        <li class="r d4"><b>Minimal data</b>Just a proof</li>
+        <li class="r d5"><b>Impact</b>Privacy that answers auditors</li>
+      </ul>
+      <table class="who r d3">
+        <tr><th></th><th>Sees</th><th>Controls</th></tr>
+        <tr><td>You</td><td>Everything</td><td>Everything</td></tr>
+        <tr><td>Anyone</td><td>The debt, <em>not who</em></td><td>Liquidations</td></tr>
+        <tr><td>Screener</td><td>Deposits</td><td>Approvals</td></tr>
+        <tr><td>Price feed</td><td>Nothing</td><td>The price</td></tr>
+        <tr><td>Auditor</td><td>A yes</td><td>Nothing</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- 11 · screened pool -->
+  <section class="slide" id="s-pool" data-t="7:40" data-notes="The obvious objection: what if it&#x27;s dirty money? The pool records where each deposit came from. A screener approves clean ones into a Merkle root; a withdrawal proves its deposit is in there without saying which one. If you&#x27;re never approved, you can always take your deposit back." data-depth="7">
+    <div class="kicker r">06 <b>Impact · Privacy Pools on LEZ</b></div>
+    <h2 class="r d1">Dirty money? <em>Prove it isn't.</em></h2>
+    <div class="grid">
+      <div>
+        <ol class="steps">
+          <li class="r d2"><div>A public deposit gets a <b>label</b>. <span>Where the money came from is on record.</span></div></li>
+          <li class="r d3"><div>A screener approves clean labels into a <b>Merkle root</b>. <span>Sanctioned sources stay out.</span></div></li>
+          <li class="r d4"><div>A withdrawal proves <b>its label is under the root</b>. <span>Not which label it is.</span></div></li>
+          <li class="r d5"><div>Not approved? <b>Take it back.</b> <span>Only the depositor can, and they always can.</span></div></li>
+        </ol>
+        <div class="stats r d6">
+          <div><b>50.5 s</b>withdraw proof, GPU</div>
+          <div><b>3</b>public accounts touched</div>
+          <div><b>0</b>bytes of holder or label</div>
+        </div>
+      </div>
+      <div class="tree r d3">
+        <svg viewBox="0 0 760 560">
+          <g class="edges">
+            <path class="edge" d="M380 70 L190 200 M380 70 L570 200 M190 200 L95 330 M190 200 L285 330 M570 200 L475 330 M570 200 L665 330 M95 330 L48 460 M95 330 L142 460 M285 330 L238 460 M285 330 L332 460 M475 330 L428 460 M475 330 L522 460 M665 330 L618 460 M665 330 L712 460"/>
+            <path class="path" d="M332 460 L285 330 L190 200 L380 70"/>
+          </g>
+          <circle class="rootn" cx="380" cy="70" r="20"/>
+          <text x="410" y="76">root · accepted by the pool</text>
+          <g>
+            <circle cx="190" cy="200" r="12" fill="#0B2a55" stroke="rgba(244,242,235,.4)"/><circle cx="570" cy="200" r="12" fill="#0B2a55" stroke="rgba(244,242,235,.4)"/>
+            <circle cx="95" cy="330" r="10" fill="#0B2a55" stroke="rgba(244,242,235,.4)"/><circle cx="285" cy="330" r="10" fill="#0B2a55" stroke="rgba(244,242,235,.4)"/><circle cx="475" cy="330" r="10" fill="#0B2a55" stroke="rgba(244,242,235,.4)"/><circle cx="665" cy="330" r="10" fill="#0B2a55" stroke="rgba(244,242,235,.4)"/>
+          </g>
+          <rect class="leaf" x="26" y="444" width="44" height="32" rx="7"/>
+          <rect class="leaf" x="120" y="444" width="44" height="32" rx="7"/>
+          <rect class="leaf" x="216" y="444" width="44" height="32" rx="7"/>
+          <rect class="leaf me" x="310" y="444" width="44" height="32" rx="7"/>
+          <rect class="leaf" x="406" y="444" width="44" height="32" rx="7"/>
+          <rect class="leaf" x="500" y="444" width="44" height="32" rx="7"/>
+          <rect class="leaf" x="596" y="444" width="44" height="32" rx="7"/>
+          <rect class="leaf" x="690" y="444" width="44" height="32" rx="7"/>
+          <text x="262" y="516">yours: proven, never named</text>
+          <rect class="leaf no" x="690" y="520" width="44" height="32" rx="7"/>
+          <text x="676" y="541" text-anchor="end">denied: never in the tree</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12 · solvency proofs -->
+  <section class="slide" id="s-solv" data-t="8:15" data-notes="The other side: an auditor or a lender asks &#x27;health at least 1.5, collateral at least 1.5 WBTC&#x27;. You prove one position in the market is yours and meets it. They learn a pseudonym and a yes. Six to ten seconds on this GPU, whatever the market&#x27;s size." data-depth="8">
+    <div class="kicker r">06 <b>Impact · E11 solvency proofs</b></div>
+    <h2 class="r d1" style="font-size:84px;max-width:1600px">Prove you're good for it. <em>Not who you are.</em></h2>
+    <div class="grid">
+      <div class="r d2">
+        <div class="request">
+          <h6>AN AUDITOR ASKS</h6>
+          <div class="q">one of market <i>WBTC·USDC</i>'s<br>positions is mine, with<br>health ≥ <i>1.5</i><br>collateral ≥ <i>1.5 WBTC</i></div>
+          <div class="verdict"><div class="ok">✓</div><div>Verified. The auditor learns<br><code>disclosure id 9c41…f2a0</code></div></div>
+        </div>
+      </div>
+      <div>
+        <div class="cover r d3">
+          <div class="pos q"><span class="who">position ?</span><b>HF 2.00</b>2.40 WBTC</div>
+          <div class="pos nq"><span class="who">position ?</span><b>HF 1.11</b>1.80 WBTC</div>
+          <div class="pos q"><span class="who">position ?</span><b>HF 1.67</b>1.62 WBTC</div>
+          <div class="pos q"><span class="who">position ?</span><b>HF 1.60</b>2.05 WBTC</div>
+          <div class="pos q"><span class="who">position ?</span><b>HF 1.82</b>2.75 WBTC</div>
+          <div class="pos nq"><span class="who">lender</span><b>no debt</b>supply only</div>
+        </div>
+        <p class="under r d4">The cover set is <b>every position in the market</b>. Four qualify, and the proof doesn't say which one is yours. <b>6–10 s</b> on the M1 GPU, at any market size.</p>
+        <p class="under r d5" style="font-size:22px">Refused in testing: another key, a cover set narrowed to one, a moved price, a stale snapshot, a replayed proof, a flipped byte.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- milestones -->
+  <section class="slide" id="s-plan" data-t="9:20" data-notes="Three milestones. Release is done: public repo, testnet passed both scenarios, a preview of the Basecamp app. Hardening: the self-review is done; next, fix the five serious findings, an external audit, and a Logos RFP or lambda Prize submission. Adoption: docs, named operators, and bootstrapping liquidity. The ask: $100k against these milestones, and introductions to early users, operators and liquidity partners.">
+    <div class="kicker r">07 <b>Continuation and the ask</b></div>
+    <h2 class="r d1" style="font-size:80px">Three milestones. <em>The first is done.</em></h2>
+    <div class="miles" style="margin-top:44px">
+      <div class="mile r d2"><div class="mh"><span>01</span>Release</div>
+        <ul><li class="ok">Open-source repo</li><li class="ok">Testnet: borrow, repay, liquidate, private flows pass</li><li class="ok">Basecamp app, v0.1.0 preview</li></ul>
+        <div class="own">Owner · <span>Vishnu Prakash</span></div></div>
+      <div class="mile r d3"><div class="mh"><span>02</span>Hardening</div>
+        <ul><li class="ok">Self-review <span>(38 findings, 5 serious)</span></li><li>Fix the serious findings</li><li>External security audit</li><li>Submission to a Logos RFP or λPrize</li></ul>
+        <div class="own">Owner · <span>Vishnu Prakash</span></div></div>
+      <div class="mile r d4"><div class="mh"><span>03</span>Adoption</div>
+        <ul><li>Docs for users and operators</li><li>Named operators: keeper, price feed, screener</li><li>Bootstrapping liquidity in the first markets</li></ul>
+        <div class="own">Owner · <span>Vishnu Prakash</span></div></div>
+    </div>
+    <div class="ask r d5"><b>THE ASK</b><span><strong>$100k</strong>, against these milestones</span><span>Introductions to early users, operators and liquidity partners</span></div>
+  </section>
+
+  <!-- 14 · close -->
+  <section class="slide" id="s-close" data-t="9:50" data-notes="Private by default. Screened by design. Solvency on demand. Thank you." data-depth="10">
+    <div class="glow"></div>
+    <svg class="mark r" viewBox="0 0 256 256"><path fill="#F4F2EB" d="M40 32H132C132 80 84 80 84 128S116 176 116 224H40Z"/><path fill="#67DCCB" d="M164 32H216V224H148C148 176 116 176 116 128S164 80 164 32Z"/></svg>
+    <h2 class="r d1">Private lending that runs on your own laptop, <em>with compliance you can prove.</em></h2>
+    <div class="motto r d2"><span>Private by default.</span><span>Screened by design.</span><span>Solvency on demand.</span></div>
+    <div class="meta r d3"><span>BOSPHORUS</span><span>github.com/merkle-groot/bosphorus</span><span>LOGOS EXECUTION ZONE · v0.3.1</span></div>
+  </section>
+
+  <!-- 6 · positions public, owners hidden -->
+  <section class="slide" id="s-salt" data-t="Q&amp;A" data-notes="While that proves (about a minute): positions stay public so anyone can liquidate; lenders never depend on a borrower being online. What&#x27;s hidden is the owner: the address comes from a salt only your key can compute. Two positions of yours don&#x27;t look related. Lose the laptop, keep the mnemonic, and you find them again. When the ring runs out, go back to the app." data-depth="2" data-appendix>
+    <div class="kicker r">A1 <b>Appendix · pseudonymous positions</b></div>
+    <h2 class="r d1">Positions stay public. <em>Owners don't.</em></h2>
+    <div class="grid">
+      <div class="chain r d2">
+        <div class="veil"><span>STAYS IN THE PROOF</span></div>
+        <div class="box">secret spending key<small>from the wallet mnemonic</small></div>
+        <div class="box">salt = HMAC(key, market ‖ owner ‖ index)</div>
+        <div class="box">seed = SHA256(market ‖ owner ‖ salt)</div>
+        <div class="box pub">position = PDA(lending, seed)<small>collateral, debt, health: public</small><span class="pub-tag">PUBLISHED</span></div>
+      </div>
+      <div class="facts">
+        <p class="r d3">Anyone can check health and liquidate. <span>Lenders never depend on a borrower being online.</span></p>
+        <p class="r d4">Two positions of one owner <span>get unrelated addresses.</span></p>
+        <p class="r d5">Lose the laptop, keep the mnemonic: <span>positions are found again by walking index 0, 1, 2…</span></p>
+        <p class="r d6">Lenders can go further: shares held on their own private account. <span>No public position at all.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · bounds pattern -->
+  <section class="slide" id="s-bounds" data-t="Q&amp;A" data-notes="LEZ programs can&#x27;t read state while planning; each apply sees one account. So ops carry claims (intervals), each account checks its own, and the maths makes any value inside the interval safe for lenders." data-depth="3" data-appendix>
+    <div class="kicker r">A2 <b>Appendix · why lenders stay safe</b></div>
+    <h2 class="r d1">The programs are blind. <em>We made that safe.</em></h2>
+    <div class="grid">
+      <div class="claims r d2">
+        <div class="claim"><label><span>SHARE RATIO</span><b>✓ market checks</b></label><div class="track"><div class="band" style="left:38%;width:16%"></div><div class="truth" style="--x:46%"></div></div></div>
+        <div class="claim"><label><span>PRICE · ±2%</span><b>✓ feed checks</b></label><div class="track"><div class="band" style="left:52%;width:22%"></div><div class="truth" style="--x:61%"></div></div></div>
+        <div class="claim"><label><span>TIME WINDOW · 20 MIN</span><b>✓ clock checks</b></label><div class="track"><div class="band" style="left:14%;width:40%"></div><div class="truth" style="--x:33%"></div></div></div>
+      </div>
+      <div class="points">
+        <p class="r d3">On LEZ a program <b>can't read state while it plans</b> a transaction, and each step sees <b>one account</b>.</p>
+        <p class="r d4">So every operation carries <b>claims</b> about what it can't see: a ratio interval, a price interval, a window in time. Each account checks the claims that concern it.</p>
+        <p class="r d5">The maths in <span class="mono">core</span> makes sure <b>any value inside a claim leaves lenders no worse off</b>. Rounding always goes their way.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 · leaks -->
+  <section class="slide" id="s-leaks" data-t="Q&amp;A" data-notes="Be straight about what leaks: exact amounts, timing, the way in, a small anonymity set." data-depth="6" data-appendix>
+    <div class="kicker r">A3 <b>Appendix · honest about it</b></div>
+    <h2 class="r d1">What the water <em>doesn't</em> hide yet.</h2>
+    <div class="list">
+      <div class="item r d2"><div class="n">01</div><div><h5>Exact amounts</h5><p>An unusual amount can link a dive to a supply, or a borrow to a later withdrawal.</p></div></div>
+      <div class="item r d3"><div class="n">02</div><div><h5>Timing</h5><p>Dive, act and surface in quick succession and the steps line up.</p></div></div>
+      <div class="item r d4"><div class="n">03</div><div><h5>The way in</h5><p>A dive shows the account it left and how much.</p></div></div>
+      <div class="item r d5"><div class="n">04</div><div><h5>A small crowd</h5><p>Few users means a small anonymity set. <b>Every client uses the same defaults</b>, rounded to the minute, so settings don't single anyone out.</p></div></div>
+    </div>
+  </section>
+
+  <!-- 8 · tide -->
+  <section class="slide" id="s-tide" data-t="Q&amp;A" data-notes="Drag the slider: the tide is debt over borrowing power, health 1.0 on the sell line." data-depth="4" data-appendix>
+    <div class="grid">
+      <div>
+        <div class="tank" id="tank">
+          <div class="sell"><span>SELL LINE · 80%</span></div>
+          <div class="word" id="tideWord">Calm water</div>
+          <div class="hf" id="tideHF">nothing owed</div>
+          <div class="water" id="tideWater"></div>
+        </div>
+        <input type="range" id="tideRange" min="0" max="100" value="0">
+        <div class="ctl"><span>OWE NOTHING</span><span>DRAG TO BORROW</span><span>TOO MUCH</span></div>
+      </div>
+      <div>
+        <div class="kicker r">A4 <b>Appendix · the app</b></div>
+        <h2 class="r d1">Health is a <em>water level.</em></h2>
+        <p class="lede r d2">Debt over borrowing power, drawn so that health 1.0 sits on the sell line. Ask for too much and the app says so before anything is sent.</p>
+        <div class="legend r d3">
+          <i style="background:#0A5BB8"></i><span>Calm water, Safe: health ≥ 1.5</span>
+          <i style="background:#9A5A00"></i><span>Rising: 1.2 to 1.5</span>
+          <i style="background:#A3221B"></i><span>Nearly over: under 1.2</span>
+        </div>
+        <p class="lede r d4" style="font-size:28px">You see all of it. <span style="color:var(--chalk)">Nobody else sees whose it is.</span></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · who it hurts -->
+  <section class="slide" id="s-hurt" data-t="Q&amp;A" data-notes="Who it hurts: funds, founders, traders, individuals." data-depth="sky" data-appendix>
+    <div class="kicker r">A5 <b>Appendix · who it hurts</b></div>
+    <h2 class="r d1">Being seen has a price.</h2>
+    <div class="cards">
+      <div class="card r d2"><div class="ico">FUNDS</div><h3>Treasuries</h3><p>Competitors watch every move in and out of the treasury.</p></div>
+      <div class="card r d3"><div class="ico">FOUNDERS</div><h3>Their own token</h3><p>Borrowing against your own token looks like selling it.</p></div>
+      <div class="card r d4"><div class="ico">TRADERS</div><h3>The line</h3><p>A public liquidation price is a target. Someone will push the price to it.</p></div>
+      <div class="card r d5"><div class="ico">PEOPLE</div><h3>A name</h3><p>A big balance tied to your name invites theft and extortion.</p></div>
+    </div>
+    <p class="foot r d6">It's your bank statement, <span>pinned to a public noticeboard.</span></p>
+  </section>
+
+  <!-- 13 · route -->
+  <section class="slide" id="s-route" data-t="Q&amp;A" data-notes="Where it stands: spikes, markets, liquidations, private mode, testnet with both scenarios passing, private lenders, GPU proving, the Basecamp app, and now screening and solvency proofs. Next: hide loan sizes too." data-depth="9" data-appendix>
+    <div class="kicker r">A6 <b>Appendix · the route so far</b></div>
+    <h2 class="r d1">Built, tested, <em>on testnet.</em></h2>
+    <div class="route r d2">
+      <svg class="line" viewBox="0 0 1540 420"><path class="track-path"/><path class="done-path"/></svg>
+      <div class="stop above"><b>Spikes</b><span>gas · proving · privacy</span><i></i></div>
+      <div class="stop below"><i></i><b>Markets</b><span>tokens · oracle · lending</span></div>
+      <div class="stop above"><b>Liquidations</b><span>keeper · fees</span><i></i></div>
+      <div class="stop below"><i></i><b>Private mode</b><span>owners hidden</span></div>
+      <div class="stop above"><b>Testnet</b><span>both scenarios pass</span><i></i></div>
+      <div class="stop below"><i></i><b>Private lenders</b><span>held shares · E9</span></div>
+      <div class="stop above"><b>GPU proving</b><span>36 s on an M1</span><i></i></div>
+      <div class="stop below"><i></i><b>Basecamp app</b><span>wallet · markets · tide</span></div>
+      <div class="stop above here"><b>Screening, solvency</b><span>E10 · E11 · now</span><i></i></div>
+      <div class="stop below next"><i></i><b>Hide loan sizes</b><span>Option 2 · next</span></div>
+    </div>
+  </section>
+
+  <div id="fizz"></div>
+  <div id="wait"><svg viewBox="0 0 92 92"><circle class="bg" cx="46" cy="46" r="42"/><circle class="fg" cx="46" cy="46" r="42"/></svg><div class="txt"><b>0:60</b>PROOF RUNNING<br>IN THE APP</div></div>
+  <div id="notes"></div>
+  <div id="gauge"></div>
+  <div id="count"></div>
+  <div id="brandmark"><svg viewBox="0 0 256 256"><path fill="#F4F2EB" d="M40 32H132C132 80 84 80 84 128S116 176 116 224H40Z"/><path fill="#67DCCB" d="M164 32H216V224H148C148 176 116 176 116 128S164 80 164 32Z"/></svg>Bosphorus</div>
+</div>
+
+<script>
+(() => {
+  const H = 1080;
+  const stage = document.getElementById('stage');
+  const ocean = document.getElementById('ocean');
+  const slides = [...document.querySelectorAll('.slide')];
+  const N = slides.length;
+
+  // Where each slide sits in the ocean column. Sky slides stack above; the surface
+  // slide straddles the waterline; water slides sink at increasing steps.
+  const SURFACE = slides.findIndex(s => s.dataset.depth === 'surface');
+  const WATERLINE = SURFACE * H + 540;            // y of the wave inside #ocean
+  const offsets = slides.map((s, i) => i * H);    // top of each slide in the column
+  const total = N * H;
+  ocean.style.height = total + 'px';
+  const sky = ocean.querySelector('.sky'), sea = ocean.querySelector('.sea');
+  sky.style.height = WATERLINE + 'px';
+  sea.style.top = WATERLINE + 'px'; sea.style.height = (total - WATERLINE) + 'px';
+  const wave = ocean.querySelector('.wave'); wave.style.top = (WATERLINE - 46) + 'px';
+  const rays = document.getElementById('rays'); rays.style.top = WATERLINE + 'px';
+  const bub = document.getElementById('bubbles'); bub.style.top = WATERLINE + 'px'; bub.style.height = (total - WATERLINE) + 'px';
+  for (let i = 0; i < 70; i++) {
+    const b = document.createElement('i'); const s = 4 + Math.random() * 14;
+    b.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;bottom:auto;width:${s}px;height:${s}px;animation-duration:${14+Math.random()*22}s;animation-delay:${-Math.random()*30}s`;
+    bub.appendChild(b);
+  }
+  // chart soundings: depth figures scattered over the water, like a nautical chart
+  const snd = ocean.querySelector('.soundings');
+  for (let i = 0; i < 160; i++) {
+    const y = WATERLINE + 80 + Math.random() * (total - WATERLINE - 120);
+    const metres = Math.round(((y - WATERLINE) / H) * 6 + Math.random() * 4);
+    const sp = document.createElement('span');
+    sp.style.left = (4 + Math.random() * 84) + '%'; sp.style.top = y + 'px';
+    sp.innerHTML = metres + '<sub style="font-size:10px">' + Math.floor(Math.random()*10) + '</sub>';
+    snd.appendChild(sp);
+  }
+  // sky: a few faint stars
+  for (let i = 0; i < 90; i++) {
+    const sp = document.createElement('span');
+    sp.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*(WATERLINE-200)}px;width:2px;height:2px;border-radius:50%;background:rgba(244,242,235,${.1+Math.random()*.35})`;
+    snd.appendChild(sp);
+  }
+
+  // depth gauge
+  const gauge = document.getElementById('gauge');
+  gauge.innerHTML = '<div class="line"></div>';
+  const gTop = 0, gH = 800;
+  const yFor = i => gTop + (i / (N - 1)) * gH;
+  for (let i = 0; i < N; i++) {
+    const t = document.createElement('div'); t.className = 'tick' + (i === SURFACE ? ' major' : '');
+    t.style.top = yFor(i) + 'px'; gauge.appendChild(t);
+  }
+  const sm = document.createElement('div'); sm.className = 'surfaceMark'; sm.textContent = '≈ 0 m'; sm.style.top = yFor(SURFACE) + 'px';
+  const pin = document.createElement('div'); pin.className = 'pin';
+  const read = document.createElement('div'); read.className = 'read';
+  gauge.append(pin, read);
+  const depthOf = i => i < SURFACE ? '+' + (SURFACE - i) * 12 + ' m' : i === SURFACE ? '0 m' : '−' + Math.round(Math.pow(i - SURFACE, 1.5) * 9) + ' m';
+  const zoneOf = i => i < SURFACE ? 'ABOVE' : i === SURFACE ? 'SURFACE' : 'BELOW';
+
+  function fit() {
+    const s = Math.min(innerWidth / 1920, innerHeight / 1080);
+    stage.style.transform = `translate(-50%, -50%) scale(${s})`;
+    stage.style.transformOrigin = 'center center';
+  }
+  addEventListener('resize', fit); fit();
+
+
+  // ---- fizz: a few bubbles always rising in screen space, underwater only
+  const fizz = document.getElementById('fizz');
+  for (let k = 0; k < 28; k++) {
+    const b = document.createElement('b'), i = document.createElement('i'), d = 3 + Math.pow(Math.random(), 2) * 15;
+    b.style.left = (Math.random() * 100) + '%';
+    b.style.animationDuration = (14 + Math.random() * 18 - d * .4) + 's';
+    b.style.animationDelay = (-Math.random() * 30) + 's';
+    i.style.width = i.style.height = d + 'px';
+    i.style.animationDuration = (2.5 + Math.random() * 3) + 's';
+    b.appendChild(i); fizz.appendChild(b);
+  }
+
+  let cur = -1;
+  const hooks = {};
+  function go(i) {
+    i = Math.max(0, Math.min(N - 1, i));
+    if (i === cur) return;
+    if (cur >= 0) { slides[cur].classList.remove('on'); hooks[slides[cur].id]?.leave?.(); }
+    cur = i;
+    // the surface slide shows the waterline in the middle; others sit wholly above or below it
+    let y = offsets[i];
+    if (i < SURFACE) y = WATERLINE - 540 - (SURFACE - i) * H;
+    ocean.style.transform = `translateY(${-y}px)`;
+    // restart reveal animations
+    const s = slides[i]; void s.offsetWidth; s.classList.add('on');
+    hooks[s.id]?.enter?.();
+    fizz.classList.toggle('on', i >= SURFACE);
+    fizz.classList.toggle('half', i === SURFACE);
+    pin.style.top = yFor(i) + 'px'; read.style.top = yFor(i) + 'px';
+    read.innerHTML = depthOf(i) + '<small>' + zoneOf(i) + '</small>';
+    const main = slides.filter(x => !x.hasAttribute('data-appendix')).length;
+    document.getElementById('count').textContent = s.hasAttribute('data-appendix')
+      ? 'APPENDIX · A' + (i - main + 1)
+      : String(i + 1).padStart(2, '0') + ' / ' + String(main).padStart(2, '0');
+    history.replaceState(null, '', '#' + (i + 1));
+    startWait(+s.dataset.wait || 0);
+    showNotes();
+  }
+
+  // ---- countdown ring on the slides shown while a proof runs in the app
+  const waitEl = document.getElementById('wait'), waitFg = waitEl.querySelector('.fg'), waitB = waitEl.querySelector('b');
+  let waitRaf;
+  function startWait(sec) {
+    cancelAnimationFrame(waitRaf);
+    waitEl.classList.toggle('show', sec > 0); waitEl.classList.remove('done');
+    if (!sec) return;
+    const t0 = performance.now();
+    const step = now => {
+      const e = (now - t0) / 1000, left = Math.max(0, sec - e);
+      waitFg.style.strokeDashoffset = 264 * (1 - Math.min(1, e / sec));
+      if (left > 0) { waitB.textContent = '0:' + String(Math.ceil(left)).padStart(2, '0'); waitRaf = requestAnimationFrame(step); }
+      else { waitEl.classList.add('done'); waitB.textContent = 'Back to app ↗'; }
+    };
+    waitRaf = requestAnimationFrame(step);
+  }
+
+  // ---- presenter notes and talk clock: N toggles notes, T restarts the clock
+  const notesEl = document.getElementById('notes');
+  let talk0 = null;
+  const mmss = s => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+  const parseT = t => { const m = /^(\d+):(\d+)$/.exec(t || ''); return m ? +m[1] * 60 + +m[2] : null; };
+  function showNotes() {
+    if (cur > 0 && talk0 == null) talk0 = performance.now();
+    if (!notesEl.classList.contains('show')) return;
+    const s = slides[cur], el = talk0 == null ? 0 : (performance.now() - talk0) / 1000, tgt = parseT(s.dataset.t);
+    const late = tgt != null && el > tgt + 20;
+    const next = slides[cur + 1]?.dataset.t;
+    notesEl.innerHTML = `<div class="meta"><span>CLOCK <b class="${late ? 'late' : ''}">${mmss(el)}</b></span><span>THIS SLIDE AT <b>${s.dataset.t || '–'}</b></span><span>NEXT AT <b>${next || '–'}</b></span></div>${s.dataset.notes || ''}`;
+  }
+  setInterval(showNotes, 1000);
+
+  addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) return;
+    if (['ArrowRight', 'ArrowDown', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); go(cur + 1); }
+    if (['ArrowLeft', 'ArrowUp', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); go(cur - 1); }
+    if (e.key === 'Home') go(0);
+    if (e.key === 'End') go(N - 1);
+    if (e.key === 'f') document.documentElement.requestFullscreen?.();
+    if (e.key === 'n') { notesEl.classList.toggle('show'); showNotes(); }
+    if (e.key === 't') { talk0 = performance.now(); showNotes(); }
+  });
+  stage.addEventListener('click', e => {
+    if (e.target.closest('input')) return;
+    const r = stage.getBoundingClientRect();
+    go(e.clientX - r.left < r.width * 0.25 ? cur - 1 : cur + 1);
+  });
+  let tx = null;
+  addEventListener('touchstart', e => tx = e.touches[0].clientX, { passive: true });
+  addEventListener('touchend', e => { if (tx == null) return; const d = e.changedTouches[0].clientX - tx; if (Math.abs(d) > 50) go(cur + (d < 0 ? 1 : -1)); tx = null; });
+
+
+  // ---- route: a gentle swell, stops spaced along it
+  (() => {
+    const route = document.querySelector('.route'); if (!route) return;
+    const W = 1540, Y = 210, A = 46, x0 = 85, n = route.querySelectorAll('.stop').length;
+    const sp = (W - 2 * x0) / (n - 1);
+    // crests at even stops (labels above), troughs at odd ones (labels below)
+    const yAt = x => Y - A * Math.cos(Math.PI * (x - x0) / sp);
+    let d = 'M0 ' + yAt(0).toFixed(1);
+    for (let x = 10; x <= W; x += 10) d += ' L' + x + ' ' + yAt(x).toFixed(1);
+    route.querySelector('.track-path').setAttribute('d', d);
+    const stops = [...route.querySelectorAll('.stop')];
+    const xs = stops.map((_, k) => x0 + k * sp);
+    const here = stops.findIndex(s => s.classList.contains('here'));
+    let dd = 'M0 ' + yAt(0).toFixed(1);
+    for (let x = 10; x <= xs[here]; x += 10) dd += ' L' + x + ' ' + yAt(x).toFixed(1);
+    dd += ' L' + xs[here] + ' ' + yAt(xs[here]).toFixed(1);
+    const done = route.querySelector('.done-path'); done.setAttribute('d', dd);
+    const len = done.getTotalLength(); done.style.strokeDasharray = len; done.style.strokeDashoffset = len;
+    stops.forEach((s, k) => {
+      const y = yAt(xs[k]);
+      s.style.left = xs[k] + 'px';
+      if (s.classList.contains('above')) { s.style.top = 'auto'; s.style.bottom = (420 - y - 11) + 'px'; }
+      else s.style.top = (y - 11) + 'px';
+    });
+  })();
+
+  // ---- slide 2: the bots' feed
+  const feedLines = [
+    'searcher-04  WBTC 64,020  → 1.42% to $63,112',
+    'searcher-11  watching 0x7a3f…c91e  size 412 WBTC',
+    'searcher-04  borrow 9,000 WBTC on venue B: push',
+    'searcher-07  WBTC 63,840  → 1.15% to target',
+    'searcher-11  bundle ready: liquidate 0x7a3f…c91e',
+    'searcher-04  WBTC 63,390  → 0.44% to target',
+  ];
+  let feedTimer;
+  hooks['s-glass'] = {
+    enter() {
+      const f = document.getElementById('feed'); f.innerHTML = ''; let k = 0;
+      clearInterval(feedTimer);
+      feedTimer = setInterval(() => {
+        const d = document.createElement('div'); d.textContent = '› ' + feedLines[k++ % feedLines.length];
+        f.prepend(d); while (f.children.length > 3) f.lastChild.remove();
+      }, 1100);
+    },
+    leave() { clearInterval(feedTimer); }
+  };
+
+  // ---- slide 8: tide
+  const water = document.getElementById('tideWater'), word = document.getElementById('tideWord'), hfEl = document.getElementById('tideHF'), range = document.getElementById('tideRange');
+  water.innerHTML = '<svg viewBox="0 0 200 20" preserveAspectRatio="none"><path fill="currentColor" d="M0 10 Q12.5 0 25 10 T50 10 T75 10 T100 10 T125 10 T150 10 T175 10 T200 10 V20 H0Z"/></svg>';
+  function tide(v) {
+    // v: 0..100 → debt / capacity. Health 1.0 at the sell line (80% of the tank height).
+    const ratio = v / 100 * 1.15;                 // 0..1.15 of capacity
+    const h = v === 0 ? 7 : 7 + ratio * (80 - 7) / 1;
+    water.style.height = Math.min(h, 99) + '%';
+    const hf = ratio > 0 ? 1 / ratio : Infinity;
+    let w, c;
+    if (v === 0) { w = 'Calm water'; c = '#0A5BB8'; }
+    else if (hf >= 2) { w = 'Calm water'; c = '#0A5BB8'; }
+    else if (hf >= 1.5) { w = 'Safe'; c = '#0A5BB8'; }
+    else if (hf >= 1.2) { w = 'Rising'; c = '#9A5A00'; }
+    else if (hf >= 1.0) { w = 'Nearly over'; c = '#A3221B'; }
+    else { w = 'Too much'; c = '#A3221B'; }
+    water.style.backgroundColor = c; water.style.color = c;
+    word.textContent = w; word.style.color = hf < 1 ? '#FF9A90' : '#F4F2EB';
+    hfEl.textContent = v === 0 ? 'nothing owed' : 'health ' + (hf > 99 ? '∞' : hf.toFixed(2));
+  }
+  range.addEventListener('input', () => tide(+range.value));
+  range.addEventListener('change', () => range.blur());
+  let tideTimers = [];
+  hooks['s-tide'] = {
+    enter() {
+      tideTimers.forEach(clearTimeout); tideTimers = [];
+      const seq = [0, 35, 60, 78, 90, 55];
+      range.value = 0; tide(0);
+      seq.forEach((v, k) => tideTimers.push(setTimeout(() => { range.value = v; tide(v); }, 900 + k * 1500)));
+    },
+    leave() { tideTimers.forEach(clearTimeout); }
+  };
+  tide(0);
+
+  const start = parseInt(location.hash.slice(1), 10);
+  go(Number.isFinite(start) ? start - 1 : 0);
+})();
+</script>
+</body>
+</html>
